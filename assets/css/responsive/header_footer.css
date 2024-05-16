@@ -1,0 +1,84 @@
+/*>=1200
+992 - 1199
+769 - 991
+*/
+@media screen and (max-width: 1199px) {
+    
+    header form div
+    {
+        width: 238px;
+    }
+}
+
+@media screen and (max-width: 991px) {
+    
+    header > .container{
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    header > .container > img {
+        margin-right: 35px;
+    }
+
+    header > .container > form {
+        margin-right: 20px;
+    }
+    header > .container form, header > .container .cart {
+        margin-top: 24px ;
+    }
+
+    header form div{
+        width: 425px;
+    }
+}
+
+@media screen and (max-width: 606px) {
+    header form div {
+        width: 240px;
+    }
+    header .burger{
+        display: inline-block;
+        margin: 0;
+    }
+    header .container > img{
+        margin-right: 135px;
+    };
+    header .container .menu {
+        display: none;
+    }
+    header .container .menu a {
+        margin: 0 10px;
+        display: block;
+        margin-top: 17px;
+        margin-top: 17px;
+    }
+    header .container .menu a:hover, header .container .menu a:active{
+        border: none;
+        margin-top: 17px;
+        margin-bottom: 17px;
+        padding: 0;
+    }
+
+    header form div imput[type="text"] {
+        width: 120;
+    }
+}
+@media screen and (max-width: 886px) {
+    footer .right form div{
+        width: 200px;
+    }
+}
+@media screen and (max-width: 608px) {
+    footer .container{
+        flex-wrap: wrap;
+    }
+
+    footer .right{
+        margin: 20px auto 0;
+    }
+
+    footer .copyrights{
+        margin-top: 18px;
+    }
+}

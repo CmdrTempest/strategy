@@ -1,0 +1,124 @@
+.block1 {
+justify-content: left;
+align-items: flex-start;
+}
+.block1 .menu a {
+    width: 150px;
+}
+.block1 .menu a {
+    display: block;
+    text-decoration: none;
+    color: #7b7b7d;
+    font-size: 1.125em;
+    margin-bottom: 5px;
+    padding: 12px 25px;
+}
+
+.block1 .menu a:hover, .block1 .menu a.active {
+color: aliceblue;
+font-weight: bold;
+background-color: #1e89f5;
+border-radius: 20px;
+}
+
+.block1 .items .sort p {
+    color: #444444;
+    font-size: 1em;
+    margin-top: 12px;
+    margin-left: 25px;
+}
+
+.block1 .items .sort p a{
+    display: inline-block;
+    text-emphasis: none;
+    color:black;
+    margin-left: 10px;
+    width: 65px;
+    background: url("../images/up.png") no-repeat;
+    background-position: 100% 50%;
+}
+
+.block1 .items .sort p a:hover, .block1 .items .sort p a:active {
+    background: url("../images/down.png") no-repeat;
+    color: #1e89f5;
+    font-weight: 600;
+    background-position: 100% 50%;
+}
+.box figure figcaption {
+    padding-left: 23px;
+    color: #4b4b4e;
+
+}
+.box figure figcaption p {
+font-size: 0.938em;
+}
+
+.box figure figcaption p span{
+    font-size: 1.250em;
+    font-weight: 600; 
+}
+.box figure .title{
+    color: #4b4b4e;
+    font-size: 0.875em;
+    padding-left: 23px;
+}
+
+.block1 figure{
+    padding-top: 20px;
+}
+.block1 .items{
+    padding-left: 25px;
+}
+.block1 .items .sort{
+    padding-bottom: 25px;
+}
+.box img{
+    border-radius: 20px;
+}
+
+.block1 .items .boxes{
+    flex-wrap: wrap;
+}
+
+.block1 .items .boxes .box {
+    margin-bottom: 28px;
+}
+
+.box button{
+    width: 100%;
+    padding: 12px;
+    border-radius: 20px;
+    background-color: #1e89f5;
+    color: aliceblue;
+    margin-top: 15px;
+    border: none;
+}
+.box button:hover{
+    cursor: pointer;
+}
+.block1 .items .pagination a{
+    margin: 0 5px;
+    color:#4b4b4e;
+    text-decoration: none;
+}
+
+.block1 .items .pagination{
+    text-align: center;
+}
+.block1 .items .pagination a:hover{
+    color: #1e89f5;
+    font-weight: 600;
+}
+.block1 .items .pagination a:hover, .block1 .items .pagination a.active{
+    color:  #1e89f5;
+    font-weight: 600;
+}
+
+.news h2, .adv h2 {
+    text-align: center;
+    margin: 70px 0;
+    color:#4b4b4e;
+    font-size: 1.875em;
+    font-weight: 600;
+}
+
