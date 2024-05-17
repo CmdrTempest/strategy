@@ -2,19 +2,32 @@
 /*
 Template Name: My Account
 */
+?>
 
-// Проверка, авторизован ли пользователь
+<?php
 if (!is_user_logged_in()) {
     // Если пользователь не авторизован, перенаправить на страницу входа
     wp_redirect(home_url('/вход'));
     exit();
 }
+?>
 
+<?php
 get_header();
 ?>
 
+<?php
+
+$current_user = wp_get_current_user();
+
+?>
+
 <style>
-    .account-wrapper {
+    .course-cards-container {
+        display: flex;
+    }
+
+    .information-card-wrapper {
         border: 1px solid #ccc;
         background-color: #f9f9f9;
         padding: 20px;
@@ -65,93 +78,136 @@ get_header();
         background-color: #2a52be;
     }
 </style>
+<div class="course-cards-container">
+    <div class="information-card-wrapper">
+        <?php
 
-<div class="account-wrapper">
-    <h1>Личный кабинет</h1>
+        echo '<div class="user-info">' . get_user_meta($current_user->ID, 'nickname', true) . '</div>';
 
-    <?php
-    // Получение текущего пользователя
-    $current_user = wp_get_current_user();
+        ?>
 
-    // Вывод фото пользователя, если есть
-    $avatar_url = get_avatar_url($current_user->ID);
-    if ($avatar_url) {
-        echo '<img class="user-profile-img" src="' . $avatar_url . '" alt="User Profile Picture">';
-    }
+        <style>
+            /* Basic styling for the dialog */
+            dialog {
+                border: none;
+                border-radius: 5px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                padding: 20px;
+                width: 300px;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+            dialog::backdrop {
+                background: rgba(0, 0, 0, 0.1);
+            }
 
-    // Вывод логина пользователя
-    echo '<div class="user-info"><strong>Логин:</strong> <span>' . $current_user->user_login . '</span></div>';
 
-    // Вывод имени пользователя
-    echo '<div class="user-info"><strong>Имя:</strong> <span>' . $current_user->display_name . '</span></div>';
 
-    // Перевод ролей
-    $role_translations = array(
-        'administrator' => 'Администратор',
-        'teacher_role' => 'Учитель',
-        'check_teacher_role' => 'Учитель на проверке',
-        'student_role' => 'Студент',
-    );
+            input::-webkit-outer-spin-button,
+            input::-webkit-inner-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+            }
+        </style>
+        <button onclick="handleAddClick()">Добавить курс</button>
+        <dialog class="modalDialog" >
+            <form method="post" action="<?php esc_url($_SERVER['REQUEST_URI'])?>" enctype="multipart/form-data">
+                <label for="price">
+                    Цена:
+                    <input name="price" type="number">
+                </label>
+                <label for="people_count">
+                    Люди:
+                    <input name="people_count" type="number">
+                </label>
+                <label for="rating">
+                    Рейтинг:
+                    <input name="rating" type="number">
+                </label>
+                <label for="title">
+                    Название:
+                    <input name="title" type="text">
+                </label>
+                <label for="post_content">
+                    Содержание курса:
+                    <textarea name="post_content"></textarea>
+                </label>
 
-    // Получение роли пользователя и вывод роли
-    $user_role = get_role($current_user->roles[0]);
-    if ($user_role && isset($role_translations[$user_role->name])) {
-        echo '<div class="user-info"><strong>Роль:</strong> <span>' . $role_translations[$user_role->name] . '</span></div>';
-    }
+                <input id="cancel" type="reset" value="Очистить">
+                <input type="submit" name="submitCourse" onclick="handleSubmitClick()" value="Добавить">
+            </form>
+        </dialog>
 
-    // Вывод email пользователя
-    echo '<div class="user-info"><strong>Email:</strong> <span>' . $current_user->user_email . '</span></div>';
+        <script>
+            function handleAddClick(e) {
+                document.querySelector('.modalDialog').showModal();
+            }
+            function handleSubmitClick(e) {
+                document.querySelector('.modalDialog').closeModal();
+            }
+        </script>
+        <?php
+        if (isset($_POST['submitCourse'])) {
+            $peopleCount = sanitize_user($_POST['people_count']);
+            $rating = $_POST['rating'];
+            $title = $_POST['title'];
+            $price = $_POST['price'];
+            $post_content = $_POST['post_content'];
 
-    // Вывод даты регистрации
-    echo '<div class="user-info"><strong>Дата регистрации:</strong> <span>' . $current_user->user_registered . '</span></div>';
+            wp_insert_post(array(
+                "post_content" => $post_content,
+                "post_author" => $current_user->ID,
+                "post_title" => $title,
+                "post_status" => "pending",
+                "post_type" => "course",
+                "meta_input" => array(
+                    "price" => $price,
+                    "people_count" => $peopleCount,
+                    "rating" => $rating
+                )
+            ));
+        }
+        ?>
+    </div>
+    <div class="information-card-wrapper ">
+        <h1>Личный кабинет</h1>
 
-    ?>
+        <?php
 
-    <a href="<?php echo home_url('/выход'); ?>">Выйти из аккаунта</a>
+        // Вывод фото пользователя, если есть
+        $avatar_url = get_avatar_url($current_user->ID);
+        if ($avatar_url) {
+            echo '<img class="user-profile-img" src="' . $avatar_url . '" alt="User Profile Picture">';
+        }
+        // Вывод логина пользователя
+        echo '<div class="user-info"><strong>Логин:</strong> <span>' . $current_user->user_login . '</span></div>';
+
+        // Вывод имени пользователя
+        echo '<div class="user-info"><strong>Имя:</strong> <span>' . $current_user->display_name . '</span></div>';
+
+        // Перевод ролей
+        $role_translations = array('administrator' => 'Администратор', 'teacher_role' => 'Учитель', 'check_teacher_role' => 'Учитель на проверке', 'student_role' => 'Студент',);
+
+        // Получение роли пользователя и вывод роли
+        $user_role = get_role($current_user->roles[0]);
+        if ($user_role && isset($role_translations[$user_role->name])) {
+            echo '<div class="user-info"><strong>Роль:</strong> <span>' . $role_translations[$user_role->name] . '</span></div>';
+        }
+
+        // Вывод email пользователя
+        echo '<div class="user-info"><strong>Email:</strong> <span>' . $current_user->user_email . '</span></div>';
+
+        // Вывод даты регистрации
+        echo '<div class="user-info"><strong>Дата регистрации:</strong> <span>' . $current_user->user_registered . '</span></div>';
+
+        ?>
+
+        <a href="<?php echo home_url('/выход'); ?>">Выйти из аккаунта</a>
+    </div>
 </div>
 
+
 <?php
-
-if (in_array('teacher_role', $current_user->roles))
-{      
-        // Вывод формы логина
-        echo '<form id="LoginForm" method="POST" action="' . esc_url($_SERVER['REQUEST_URI']) . '" enctype="multipart/form-data">
-        <input type="text" name="username">
-        <input type="password" name="password">
-        <input type="email" name="email">
-        <input type="submit" name="submitLogin" value="Зарегистрироваться">
-        </form>';
-        if (isset($_POST['submitLogin'])) {
-
-            // $post = get_post(46);
-            // $post->post_status = 'pending';
-            // $post->post_title = 'Курс';
-            // $post->post_author = 1;
-            // $post->ID = 0;
-            // $post=$post->to_array();
-            // unset($post['guid']);
-            // unset($post['post_date']);
-            // unset($post['post_date_gmt']);
-
-            // print_r(wp_insert_post($post));
-    
-            // Gather post data.
-$my_post = array(
-    'post_title'    => 'My post',
-    'post_content'  => 'This is my post.',
-    'post_type' => 'course',
-);
-
-// Insert the post into the database.
-wp_insert_post( $my_post );
-            exit();
-            }
-        
-    }
-?>
-
-
-
-<?php 
 get_footer();
 ?>
