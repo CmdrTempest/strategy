@@ -34,25 +34,25 @@
                             if ($query->have_posts()) :
                                 while ($query->have_posts()) : $query->the_post();
                             ?>
-                                    <div class="box">
-                                        <figure>
-                                            <?php
+                                <div class="box">
+                                    <figure>
+                                        <?php
                                             if (has_post_thumbnail()) {
                                                 the_post_thumbnail('thumbnail', array('width' => 280, 'height' => 200));
                                             }
-                                            ?>
-                                            <figcaption>
-                                                <p><strong>Цена:</strong> <span class="price"><?php echo get_post_meta(get_the_ID(), 'цена', true); ?></span> рублей за урок</p>
-                                                <p><strong>Часы:</strong> <?php echo get_post_meta(get_the_ID(), 'hours', true); ?></p>
-                                                <p><strong>Люди:</strong> <?php echo get_post_meta(get_the_ID(), 'people-count', true); ?></p>
-                                                <p><strong>Рейтинг:</strong> <?php echo get_post_meta(get_the_ID(), 'rating', true); ?>/5</p>
-                                            </figcaption>
+                                        ?>
+                                        <figcaption>
+                                            <p><strong>Цена:</strong> <span class="price"><?php echo get_post_meta(get_the_ID(), 'цена', true); ?></span> рублей за урок</p>
+                                            <p><strong>Часы:</strong> <?php echo get_post_meta(get_the_ID(), 'hours', true); ?></p>
+                                            <p><strong>Люди:</strong> <?php echo get_post_meta(get_the_ID(), 'people-count', true); ?></p>
+                                            <p><strong>Рейтинг:</strong> <?php echo get_post_meta(get_the_ID(), 'rating', true); ?>/5</p>
+                                        </figcaption>
                                             <p class="title"><?php the_title(); ?></p>
-                                            <button>
-                                                Записаться
-                                            </button>
-                                        </figure>
-                                    </div>
+                                            <a href="<?php the_permalink(); ?>">
+                                                <button>Записаться</button>
+                                            </a>
+                                    </figure>   
+                                </div>
                             <?php
                                 endwhile;
                                 wp_reset_postdata();

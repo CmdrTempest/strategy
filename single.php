@@ -1,26 +1,28 @@
 <?php
-   get_header(); // Включаем шапку сайта
-   ?>
+get_header(); 
+?>
 
-   <div id="primary" class="content-area">
-       <main id="main" class="site-main">
+<div id="primary" class="content-area">
+    <main id="main" class="site-main">
 
-           <?php
-           // Начинаем цикл WordPress, который проверяет, есть ли у нас записи для отображения
-           while (have_posts()) :
-               the_post();
+        <?php
+        // Начинаем цикл WordPress, который проверяет, есть ли у нас записи для отображения
+        while (have_posts()) :
+            the_post();
 
-               // Включаем шаблон содержимого поста (можно использовать content.php или создать свой)
-               get_template_part('template-parts/content', get_post_type());
+            if (get_post_type() == 'course') {
+                get_template_part('template-parts/content', 'course');
+            } else {
+                // Для всех остальных типов записей используем стандартный шаблон
+                get_template_part('template-parts/content', get_post_type());
+            }
 
-               // Если нужны комментарии, можно добавить функцию комментариев здесь
-               // comments_template();
+        endwhile; // Конец цикла WordPress
+        ?>
 
-           endwhile; // Конец цикла WordPress
-           ?>
+    </main>
+</div>
 
-       </main><!-- #main -->
-   </div><!-- #primary -->
-
-   <?php
-   get_footer(); // Включаем подвал сайта
+<?php
+get_footer();
+?>

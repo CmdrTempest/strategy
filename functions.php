@@ -299,3 +299,63 @@ function add_query_vars_filter( $vars ){
   
   get_query_var('password');
   get_query_var('username');
+
+
+
+
+
+  // Добавляем мета-бокс
+function course_add_meta_boxes() {
+    add_meta_box(
+        'course_url',
+        'URL страницы прохождения курса',
+        'course_url_meta_box_callback',
+        'course',
+        'normal',
+        'high'
+    );
+}
+add_action('add_meta_boxes', 'course_add_meta_boxes');
+
+function course_url_meta_box_callback($post) {
+    // Добавляем nonce для верификации
+    wp_nonce_field('course_save_meta_box_data', 'course_meta_box_nonce');
+
+    $value = get_post_meta($post->ID, '_course_url', true);
+
+    echo '<label for="course_url">URL страницы прохождения курса:</label>';
+    echo '<input type="text" id="course_url" name="course_url" value="' . esc_attr($value) . '" size="25" />';
+}
+
+// Сохраняем мета-данные при сохранении поста
+function course_save_meta_box_data($post_id) {
+    if (!isset($_POST['course_meta_box_nonce'])) {
+        return;
+    }
+
+    if (!wp_verify_nonce($_POST['course_meta_box_nonce'], 'course_save_meta_box_data')) {
+        return;
+    }
+
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+
+    if (isset($_POST['post_type']) && 'course' == $_POST['post_type']) {
+        if (!current_user_can('edit_page', $post_id)) {
+            return;
+        }
+    } else {
+        if (!current_user_can('edit_post', $post_id)) {
+            return;
+        }
+    }
+
+    if (!isset($_POST['course_url'])) {
+        return;
+    }
+
+    $my_data = sanitize_text_field($_POST['course_url']);
+    update_post_meta($post_id, '_course_url', $my_data);
+}
+add_action('save_post', 'course_save_meta_box_data');

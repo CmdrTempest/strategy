@@ -102,8 +102,6 @@ $current_user = wp_get_current_user();
                 background: rgba(0, 0, 0, 0.1);
             }
 
-
-
             input::-webkit-outer-spin-button,
             input::-webkit-inner-spin-button {
                 -webkit-appearance: none;
