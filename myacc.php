@@ -63,37 +63,31 @@ $current_user = wp_get_current_user();
         margin-bottom: 20px;
         color: #333;
     }
-
-    .logout-button {
-        background-color: #00416a;
-        color: white;
-        padding: 10px 20px;
+    .close-button {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: none;
         border: none;
-        border-radius: 4px;
+        font-size: 24px;
         cursor: pointer;
-        margin-top: 20px;
+        color: #333;
     }
 
-    .logout-button:hover {
-        background-color: #2a52be;
+    .close-button:hover {
+        color: #000;
     }
+
 </style>
 <div class="course-cards-container">
     <div class="information-card-wrapper">
-        <?php
-
-        echo '<div class="user-info">' . get_user_meta($current_user->ID, 'nickname', true) . '</div>';
-
-        ?>
-
         <style>
-            /* Basic styling for the dialog */
             dialog {
                 border: none;
                 border-radius: 5px;
                 box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
                 padding: 20px;
-                width: 300px;
+                width: calc(100%-100px);
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
@@ -109,41 +103,105 @@ $current_user = wp_get_current_user();
             }
         </style>
         <button onclick="handleAddClick()">Добавить курс</button>
-        <dialog class="modalDialog" >
+        <button onclick="handleCourseClick()">Мои курсы</button>
+        <dialog class="modalDialog" id="addCourseDialog">
+            <button class="close-button" onclick="closeDialog('addCourseDialog')">&times;</button>
             <form method="post" action="<?php esc_url($_SERVER['REQUEST_URI'])?>" enctype="multipart/form-data">
                 <label for="price">
                     Цена:
                     <input name="price" type="number">
                 </label>
+                <br>
                 <label for="people_count">
                     Люди:
                     <input name="people_count" type="number">
                 </label>
+                <br>
                 <label for="rating">
                     Рейтинг:
                     <input name="rating" type="number">
                 </label>
+                <br>
                 <label for="title">
                     Название:
                     <input name="title" type="text">
                 </label>
+                <br>
+                <label for="hours">
+                    Часы:
+                    <input name="hours" type="number">
+                </label>
+                <br>
                 <label for="post_content">
                     Содержание курса:
                     <textarea name="post_content"></textarea>
                 </label>
+                <br>
+                <label for="course_image">
+                    Шапка курса:
+                    <input name="course_image" type="file" accept=".png, .jpg, .jpeg">
+                </label>
+                <hr>
 
                 <input id="cancel" type="reset" value="Очистить">
                 <input type="submit" name="submitCourse" onclick="handleSubmitClick()" value="Добавить">
             </form>
         </dialog>
+        <dialog class="modalDialog" id="courseDashboardDialog">
+            <button class="close-button" onclick="closeDialog('courseDashboardDialog')">&times;</button>
+            <div class="boxes d-flex clearfix">
+                <?php
+                $args = array(
+                    'post_type'      => 'course',
+                    'posts_per_page' => 9,
+                    'author' => get_current_user_id(),
+                );
+
+                $query = new WP_Query($args);
+
+                if ($query->have_posts()) :
+                    while ($query->have_posts()) : $query->the_post();
+                        ?>
+                        <div class="box">
+                            <figure>
+                                <?php
+                                if (has_post_thumbnail()) {
+                                    the_post_thumbnail('thumbnail', array('width' => 280, 'height' => 200));
+                                }
+                                ?>
+                                <figcaption>
+                                    <p><strong>Цена:</strong> <span class="price"><?php echo get_post_meta(get_the_ID(), 'цена', true); ?></span> рублей за урок</p>
+                                    <p><strong>Часы:</strong> <?php echo get_post_meta(get_the_ID(), 'hours', true); ?></p>
+                                    <p><strong>Люди:</strong> <?php echo get_post_meta(get_the_ID(), 'people-count', true); ?></p>
+                                    <p><strong>Рейтинг:</strong> <?php echo get_post_meta(get_the_ID(), 'rating', true); ?>/5</p>
+                                </figcaption>
+                                <p class="title"><?php the_title(); ?></p>
+                            </figure>
+                        </div>
+                    <?php
+                    endwhile;
+                    wp_reset_postdata();
+                else :
+                    echo 'Курсы не найдены.';
+                endif;
+                ?>
+            </div>
+        </dialog>
 
         <script>
             function handleAddClick(e) {
-                document.querySelector('.modalDialog').showModal();
+                document.querySelector('#addCourseDialog').showModal();
+            }
+            function handleCourseClick(e) {
+                document.querySelector('#courseDashboardDialog').showModal();
             }
             function handleSubmitClick(e) {
-                document.querySelector('.modalDialog').closeModal();
+                document.querySelector('#addCourseDialog').closeModal();
             }
+            function closeDialog(dialogId) {
+                document.getElementById(dialogId).close();
+            }
+
         </script>
         <?php
         if (isset($_POST['submitCourse'])) {
@@ -152,19 +210,52 @@ $current_user = wp_get_current_user();
             $title = $_POST['title'];
             $price = $_POST['price'];
             $post_content = $_POST['post_content'];
+            $hours = $_POST['hours'];
+            $uploaded_file = wp_upload_bits( $_FILES['course_image']['name'], null, file_get_contents( $_FILES['course_image']['tmp_name'] ) );
 
-            wp_insert_post(array(
-                "post_content" => $post_content,
-                "post_author" => $current_user->ID,
-                "post_title" => $title,
-                "post_status" => "pending",
-                "post_type" => "course",
-                "meta_input" => array(
-                    "price" => $price,
-                    "people_count" => $peopleCount,
-                    "rating" => $rating
-                )
-            ));
+            if ( ! $uploaded_file['error'] ) {
+                $file_path = $uploaded_file['file'];
+                $file_name = basename( $file_path );
+                $file_type = wp_check_filetype( $file_name, null );
+
+                // Prepare an array of post data for the attachment.
+                $attachment = array(
+                    'guid'           => $uploaded_file['url'],
+                    'post_mime_type' => $file_type['type'],
+                    'post_title'     => sanitize_file_name( $file_name ),
+                    'post_content'   => '',
+                    'post_status'    => 'inherit'
+                );
+
+                // Insert the attachment.
+                $attach_id = wp_insert_attachment( $attachment, $file_path );
+
+                // Make sure that this file is included, because we will need it later.
+                require_once( ABSPATH . 'wp-admin/includes/image.php' );
+
+                // Generate the metadata for the attachment, and update the database record.
+                $attach_data = wp_generate_attachment_metadata( $attach_id, $file_path );
+                wp_update_attachment_metadata( $attach_id, $attach_data );
+
+
+                $post = wp_insert_post(array(
+                    "post_content" => $post_content,
+                    "post_author" => $current_user->ID,
+                    "post_title" => $title,
+                    "post_status" => "pending",
+                    "post_type" => "course",
+                    "meta_input" => array(
+                        "цена" => $price,
+                        "people_count" => $peopleCount,
+                        "rating" => $rating,
+                        "hours" => $hours,
+                    )
+                ));
+                set_post_thumbnail( $post, $attach_id );
+
+            }
+
+
         }
         ?>
     </div>
