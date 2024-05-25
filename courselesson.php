@@ -10,7 +10,10 @@ get_header();
         <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
             <header class="entry-header">
                 <?php the_title('<h1 class="entry-title">', '</h1>'); ?>
-            </header><!-- .entry-header -->
+            </header>
+
+
+
 
             <div class="entry-content">
                 <?php
@@ -18,9 +21,12 @@ get_header();
                     the_post();
                     the_content();
                 endwhile;
+
+
+                
                 ?>
-            </div><!-- .entry-content -->
-        </article><!-- #post-<?php the_ID(); ?> -->
+            </div>
+        </article> <?php the_ID(); ?> 
     </main><!-- #main -->
 </div><!-- #primary -->
 

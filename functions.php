@@ -359,3 +359,83 @@ function course_save_meta_box_data($post_id) {
     update_post_meta($post_id, '_course_url', $my_data);
 }
 add_action('save_post', 'course_save_meta_box_data');
+
+
+function get_question_editor($number)
+{
+    return sprintf(
+        '<form id="test-form" method="POST" action="%s" enctype="multipart/form-data">
+            <label for="theory-%d">
+                Теория:
+                <textarea name="theory-%d" rows="4" cols="50"></textarea>
+            </label>
+            <br>
+            <label for="question-%d">
+                Вопрос:
+                <input name="question-%d" type="text">
+            </label>
+            <br>
+            <label for="answer-%d-1">
+                Ответ 1:
+                <input name="answer-%d-1" type="number">
+            </label>
+            <br>
+            <label for="answer-%d-2">
+                Ответ 2:
+                <input name="answer-%d-2" type="number">
+            </label>
+            <br>
+            <label for="answer-%d-3">
+                Ответ 3:
+                <input name="answer-%d-3" type="text">
+            </label>
+            <br>
+            <label for="answer-%d-4">
+                Ответ 4:
+                <input name="answer-%d-4" type="number">
+            </label>
+            <hr>
+            <input id="cancel" type="reset" value="Очистить">
+            <input type="submit" name="submitCourse" onclick="handleSubmitClick()" value="Добавить">
+        </form>',
+        esc_url($_SERVER['REQUEST_URI']), // %s
+        $number, // %d for theory
+        $number, // %d for theory textarea name
+        $number, // %d for question
+        $number, // %d for question input name
+        $number, // %d for answer 1
+        $number, // %d for answer 1 input name
+        $number, // %d for answer 2
+        $number, // %d for answer 2 input name
+        $number, // %d for answer 3
+        $number, // %d for answer 3 input name
+        $number, // %d for answer 4
+        $number  // %d for answer 4 input name
+    );
+}
+
+function display_question_editor_result() {
+    if (isset($_POST['submitCourse'])) {
+        $number = 1; // Assuming only one question is being processed at a time
+        $theory = isset($_POST["theory-$number"]) ? $_POST["theory-$number"] : '';
+        $question = isset($_POST["question-$number"]) ? $_POST["question-$number"] : '';
+        $answer1 = isset($_POST["answer-$number-1"]) ? $_POST["answer-$number-1"] : '';
+        $answer2 = isset($_POST["answer-$number-2"]) ? $_POST["answer-$number-2"] : '';
+        $answer3 = isset($_POST["answer-$number-3"]) ? $_POST["answer-$number-3"] : '';
+        $answer4 = isset($_POST["answer-$number-4"]) ? $_POST["answer-$number-4"] : '';
+
+        echo '<div>';
+        echo '<h3>Теория</h3>';
+        echo '<p>' . htmlspecialchars($theory) . '</p>';
+        echo '<h3>Вопрос</h3>';
+        echo '<p>' . htmlspecialchars($question) . '</p>';
+        echo '<h3>Ответы</h3>';
+        echo '<p>Ответ 1: ' . htmlspecialchars($answer1) . '</p>';
+        echo '<p>Ответ 2: ' . htmlspecialchars($answer2) . '</p>';
+        echo '<p>Ответ 3: ' . htmlspecialchars($answer3) . '</p>';
+        echo '<p>Ответ 4: ' . htmlspecialchars($answer4) . '</p>';
+        echo '</div>';
+    }
+}
+
+
