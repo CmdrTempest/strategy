@@ -102,7 +102,11 @@ $current_user = wp_get_current_user();
                 margin: 0;
             }
         </style>
-        <button onclick="handleAddClick()">Добавить курс</button>
+        <?php
+        if(!in_array('participant_role', $current_user->roles)) {
+            echo '<button onclick="handleAddClick()">Добавить курс</button>';
+        }
+        ?>
         <button onclick="handleCourseClick()">Мои курсы</button>
         <dialog class="modalDialog" id="addCourseDialog">
             <button class="close-button" onclick="closeDialog('addCourseDialog')">&times;</button>
@@ -174,6 +178,7 @@ $current_user = wp_get_current_user();
                                     <p><strong>Часы:</strong> <?php echo get_post_meta(get_the_ID(), 'hours', true); ?></p>
                                     <p><strong>Люди:</strong> <?php echo get_post_meta(get_the_ID(), 'people-count', true); ?></p>
                                     <p><strong>Рейтинг:</strong> <?php echo get_post_meta(get_the_ID(), 'rating', true); ?>/5</p>
+                                    <a href="<?php echo add_query_arg('test_id',get_post()->ID, home_url('/test-editor/')) ?>">Редактировать курс</a>
                                 </figcaption>
                                 <p class="title"><?php the_title(); ?></p>
                             </figure>
@@ -218,7 +223,6 @@ $current_user = wp_get_current_user();
                 $file_name = basename( $file_path );
                 $file_type = wp_check_filetype( $file_name, null );
 
-                // Prepare an array of post data for the attachment.
                 $attachment = array(
                     'guid'           => $uploaded_file['url'],
                     'post_mime_type' => $file_type['type'],
@@ -227,13 +231,10 @@ $current_user = wp_get_current_user();
                     'post_status'    => 'inherit'
                 );
 
-                // Insert the attachment.
                 $attach_id = wp_insert_attachment( $attachment, $file_path );
 
-                // Make sure that this file is included, because we will need it later.
                 require_once( ABSPATH . 'wp-admin/includes/image.php' );
 
-                // Generate the metadata for the attachment, and update the database record.
                 $attach_data = wp_generate_attachment_metadata( $attach_id, $file_path );
                 wp_update_attachment_metadata( $attach_id, $attach_data );
 
@@ -249,6 +250,7 @@ $current_user = wp_get_current_user();
                         "people_count" => $peopleCount,
                         "rating" => $rating,
                         "hours" => $hours,
+                        "test_body" => "{}",
                     )
                 ));
                 set_post_thumbnail( $post, $attach_id );

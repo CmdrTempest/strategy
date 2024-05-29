@@ -292,14 +292,15 @@ add_filter('выход', 'custom_logout_redirect', 10, 2);
 function add_query_vars_filter( $vars ){
     $vars[] = "password";
     $vars[] = "username";
+    $vars[] = "course_id";
     return $vars;
   }
   
   add_filter( 'query_vars', 'add_query_vars_filter' );
-  
-  get_query_var('password');
-  get_query_var('username');
 
+get_query_var('password');
+get_query_var('username');
+get_query_var('course_id');
 
 
 
@@ -326,7 +327,6 @@ function course_url_meta_box_callback($post) {
     echo '<label for="course_url">URL страницы прохождения курса:</label>';
     echo '<input type="text" id="course_url" name="course_url" value="' . esc_attr($value) . '" size="25" />';
 }
-
 // Сохраняем мета-данные при сохранении поста
 function course_save_meta_box_data($post_id) {
     if (!isset($_POST['course_meta_box_nonce'])) {
@@ -359,3 +359,148 @@ function course_save_meta_box_data($post_id) {
     update_post_meta($post_id, '_course_url', $my_data);
 }
 add_action('save_post', 'course_save_meta_box_data');
+
+
+// Competitions
+
+function create_competition_post_type() {
+    $labels = array(
+        'name'               => _x( 'Соревнования', 'post type general name', 'textdomain' ),
+        'singular_name'      => _x( 'Соревнование', 'post type singular name', 'textdomain' ),
+        'menu_name'          => _x( 'Соревнования', 'admin menu', 'textdomain' ),
+        'name_admin_bar'     => _x( 'Соревнование', 'add new on admin bar', 'textdomain' ),
+        'add_new'            => _x( 'Добавить новое', 'competition', 'textdomain' ),
+        'add_new_item'       => __( 'Добавить новое соревнование', 'textdomain' ),
+        'new_item'           => __( 'Новое соревнование', 'textdomain' ),
+        'edit_item'          => __( 'Редактировать соревнование', 'textdomain' ),
+        'view_item'          => __( 'Просмотреть соревнование', 'textdomain' ),
+        'all_items'          => __( 'Все соревнования', 'textdomain' ),
+        'search_items'       => __( 'Искать соревнования', 'textdomain' ),
+        'parent_item_colon'  => __( 'Родительские соревнования:', 'textdomain' ),
+        'not_found'          => __( 'Соревнования не найдены.', 'textdomain' ),
+        'not_found_in_trash' => __( 'Соревнования не найдены в корзине.', 'textdomain' )
+    );
+
+    $args = array(
+        'labels'             => $labels,
+        'public'             => true,
+        'publicly_queryable' => true,
+        'show_ui'            => true,
+        'show_in_menu'       => true,
+        'query_var'          => true,
+        'rewrite'            => array( 'slug' => 'competition' ),
+        'capability_type'    => 'post',
+        'has_archive'        => true,
+        'hierarchical'       => false,
+        'menu_position'      => null,
+        'supports'           => array( 'title', 'editor', 'author', 'thumbnail', 'excerpt', 'comments' ),
+    );
+
+    register_post_type( 'competition', $args );
+}
+add_action( 'init', 'create_competition_post_type' );
+
+function save_competition_meta_box_data( $post_id ) {
+    if ( ! isset( $_POST['competition_meta_box_nonce'] ) ) {
+        return;
+    }
+
+    if ( ! wp_verify_nonce( $_POST['competition_meta_box_nonce'], 'save_competition_meta_box_data' ) ) {
+        return;
+    }
+
+    if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+        return;
+    }
+
+    if ( ! current_user_can( 'edit_post', $post_id ) ) {
+        return;
+    }
+
+    if ( ! isset( $_POST['competition_tests'] ) ) {
+        return;
+    }
+
+    $competition_tests = sanitize_text_field( $_POST['competition_tests'] );
+    update_post_meta( $post_id, '_competition_tests', $competition_tests );
+}
+add_action( 'save_post', 'save_competition_meta_box_data' );
+
+function add_competition_meta_box() {
+    add_meta_box(
+        'competition_tests',
+        __( 'Тесты для соревнования', 'textdomain' ),
+        'competition_meta_box_callback',
+        'competition',
+        'normal',
+        'high'
+    );
+}
+add_action( 'add_meta_boxes', 'add_competition_meta_box' );
+
+function competition_meta_box_callback( $post ): void
+{
+    wp_nonce_field( 'save_competition_meta_box_data', 'competition_meta_box_nonce' );
+
+    $value = get_post_meta( $post->ID, '_competition_tests', true );
+
+    echo '<label for="competition_tests">';
+    _e( 'Введите тесты в формате JSON', 'textdomain' );
+    echo '</label> ';
+    echo '<textarea id="competition_tests" name="competition_tests" rows="10" cols="50" class="large-text">' . esc_attr( $value ) . '</textarea>';
+}
+
+
+
+function display_competitions(): void
+{
+    $args = array(
+        'post_type' => 'competition',
+        'posts_per_page' => -1,
+    );
+
+    $query = new WP_Query( $args );
+
+    if ( $query->have_posts() ) {
+        while ( $query->have_posts() ) {
+            $query->the_post();
+            $competition_tests = get_post_meta( get_the_ID(), '_competition_tests', true );
+
+            echo '<h2>' . get_the_title() . '</h2>';
+            echo '<div>' . get_the_content() . '</div>';
+            echo '<pre>' . esc_html( $competition_tests ) . '</pre>';
+        }
+        wp_reset_postdata();
+    } else {
+        echo '<p>Соревнования не найдены.</p>';
+    }
+}
+add_shortcode( 'display_competitions', 'display_competitions' );
+
+// test-editor
+function save_test(): void
+{
+    if ( ! isset( $_POST['form_data'] ) ) {
+        wp_send_json_error( array( 'message' => 'Неверные данные формы' ) );
+    }
+
+    parse_str( $_POST['form_data'], $form_data );
+
+    $competition_id = intval( $_POST['competition_id'] );
+    $test_id = intval( $_POST['test_id'] );
+    $questions = $form_data['questions'] ?? array();
+
+    $questions_json = json_encode( $questions, JSON_UNESCAPED_UNICODE );
+
+    if ( $competition_id > 0 ) {
+        update_post_meta( $competition_id, '_competition_tests', $questions_json );
+        wp_send_json_success( array( 'message' => 'Тест успешно сохранен в соревновании.' ) );
+    } elseif ( $test_id > 0 ) {
+        update_post_meta( $test_id, 'test', $questions_json );
+        wp_send_json_success( array( 'message' => 'Тест успешно сохранен.' ) );
+    } else {
+        wp_send_json_error( array( 'message' => 'Неверный ID соревнования или теста' ) );
+    }
+}
+add_action( 'wp_ajax_save_test', 'save_test' );
+add_action( 'wp_ajax_nopriv_save_test', 'save_test' );
